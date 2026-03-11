@@ -10,14 +10,6 @@ function groupBy(characters, keyFn, limit = Infinity) {
     .slice(0, limit);
 }
 
-export function groupByOrigin(characters, limit = 12) {
-  return groupBy(characters, c => c.origin?.name, limit);
-}
-
-export function groupByLocation(characters, limit = 12) {
-  return groupBy(characters, c => c.location?.name, limit);
-}
-
 export function groupBySpecies(characters) {
   return groupBy(characters, c => c.species);
 }
@@ -40,4 +32,27 @@ export function getSummaryStats(characters) {
     uniqueOrigins: new Set(characters.map(c => c.origin?.name)).size,
     uniqueSpecies: new Set(characters.map(c => c.species)).size,
   };
+}
+
+export function getDisplacementBySpecies(characters, limit = 8) {
+  const map = {};
+
+  characters.forEach(c => {
+    const origin   = c.origin?.name;
+    const location = c.location?.name;
+    const species  = c.species || "Unknown";
+
+    if (!origin || !location) return;
+    if (origin === "unknown" || location === "unknown") return;
+
+    if (!map[species]) map[species] = { name: species, displaced: 0, atHome: 0 };
+
+    if (origin !== location) map[species].displaced++;
+    else map[species].atHome++;
+  });
+
+  return Object.values(map)
+    .filter(d => d.displaced + d.atHome > 0)
+    .sort((a, b) => (b.displaced + b.atHome) - (a.displaced + a.atHome))
+    .slice(0, limit);
 }

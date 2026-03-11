@@ -5,7 +5,7 @@ import {
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 import {
-  groupByOrigin, groupByLocation, groupBySpecies,
+  getDisplacementBySpecies, groupBySpecies,
   groupByStatus, groupByGender, getSummaryStats,
 } from "@/utils/transformData";
 
@@ -15,12 +15,15 @@ const PIE_COLORS = ["#6366f1", "#f59e0b", "#10b981", "#3b82f6", "#ec4899", "#14b
 export default function OriginChart({ characters }) {
   if (!characters.length) return null;
 
-  const stats     = getSummaryStats(characters);
-  const origins   = groupByOrigin(characters, 12);
-  const locations = groupByLocation(characters, 12);
-  const species   = groupBySpecies(characters);
-  const statuses  = groupByStatus(characters);
-  const genders   = groupByGender(characters);
+  const stats = getSummaryStats(characters);
+  const displaced = getDisplacementBySpecies(characters);
+  const species = groupBySpecies(characters);
+  const statuses = groupByStatus(characters);
+  const genders = groupByGender(characters);
+
+  const totalDisplaced = displaced.reduce((s, d) => s + d.displaced, 0);
+  const totalTracked = displaced.reduce((s, d) => s + d.displaced + d.atHome, 0);
+  const displacedPct = totalTracked ? Math.round((totalDisplaced / totalTracked) * 100) : 0;
 
   return (
     <div className="mt-10 space-y-10">
@@ -29,9 +32,9 @@ export default function OriginChart({ characters }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total Characters", value: stats.total },
-          { label: "Alive",            value: `${stats.alive} (${stats.alivePercent}%)` },
-          { label: "Unique Origins",   value: stats.uniqueOrigins },
-          { label: "Unique Species",   value: stats.uniqueSpecies },
+          { label: "Alive", value: `${stats.alive} (${stats.alivePercent}%)` },
+          { label: "Unique Origins", value: stats.uniqueOrigins },
+          { label: "Unique Species", value: stats.uniqueSpecies },
         ].map(({ label, value }) => (
           <div key={label} className="border rounded-lg p-4 text-center">
             <p className="text-2xl font-bold">{value}</p>
@@ -40,37 +43,25 @@ export default function OriginChart({ characters }) {
         ))}
       </div>
 
-      {/* All 5 charts in one row */}
-      <div className="grid grid-cols-5 gap-4">
-
-        {/* Origins */}
+      {/* All 4 charts in one row */}
+      <div className="grid grid-cols-4 gap-4">
+        {/* Displacement */}
         <div>
-          <h2 className="text-sm font-bold mb-3">By Origin (Top 12)</h2>
+          <h2 className="text-sm font-bold mb-1">Displacement by Species (Top 8)</h2>
+          <p className="text-xs text-gray-400 mb-3">{displacedPct}% of characters away from origin</p>
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={origins} layout="vertical" margin={{ left: 0, right: 10 }}>
+            <BarChart data={displaced} layout="vertical" margin={{ left: 10, right: 10 }}>
               <XAxis type="number" tick={{ fontSize: 10 }} />
               <YAxis
                 type="category" dataKey="name" width={80} tick={{ fontSize: 10 }}
                 tickFormatter={v => v.length > 12 ? v.slice(0, 10) + "…" : v}
               />
-              <Tooltip />
-              <Bar dataKey="count" name="Characters" fill="#6366f1" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Locations */}
-        <div>
-          <h2 className="text-sm font-bold mb-3">By Location (Top 12)</h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={locations} layout="vertical" margin={{ left: 0, right: 10 }}>
-              <XAxis type="number" tick={{ fontSize: 10 }} />
-              <YAxis
-                type="category" dataKey="name" width={80} tick={{ fontSize: 10 }}
-                tickFormatter={v => v.length > 12 ? v.slice(0, 10) + "…" : v}
+              <Tooltip
+                formatter={(value, name) => [value, name === "displaced" ? "Away from origin" : "Still at origin"]}
               />
-              <Tooltip />
-              <Bar dataKey="count" name="Characters" fill="#3b82f6" />
+              <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} formatter={v => v === "displaced" ? "Away" : "At home"} />
+              <Bar dataKey="atHome"    name="atHome"    stackId="a" fill="#22c55e" />
+              <Bar dataKey="displaced" name="displaced" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
