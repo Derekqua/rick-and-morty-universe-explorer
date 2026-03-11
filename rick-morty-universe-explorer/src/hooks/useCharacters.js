@@ -3,33 +3,43 @@
 import { useEffect, useState } from "react";
 import { fetchCharacters } from "@/lib/api";
 
-export default function useCharacters(page) {
+export default function useCharacters(page, search) {
+  const [characters, setCharacters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
 
-    const [characters, setCharacters] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
 
-    useEffect(() => {
+    async function load() {
+      setLoading(true);
+      setError(null);
 
-        async function loadCharacters() {
+      const result = await fetchCharacters(page, search);
 
-        setLoading(true);
-        setError(null);
+      if (cancelled) return;
 
-        const result = await fetchCharacters(page);
-
-        if (result.error) {
-            setError(result.error);
-        } else {
-            setCharacters(prev => [...prev, ...(result.data.results || [])]);
-        }
-
+      if (result.error) {
+        setError(result.error);
         setLoading(false);
-        }
+        return;
+      }
 
-        loadCharacters();
+      const { results = [], info = {} } = result.data;
 
-    }, [page]);
+      // page 1 = new search, replace list. page > 1 = load more, append
+      setCharacters(prev => (page === 1 ? results : [...prev, ...results]));
+      setHasMore(page < (info.pages ?? 0));
+      setTotalCount(info.count ?? 0);
+      setLoading(false);
+    }
 
-    return { characters, loading, error };
+    load();
+
+    return () => { cancelled = true; };
+  }, [page, search]);
+
+  return { characters, loading, error, hasMore, totalCount };
 }

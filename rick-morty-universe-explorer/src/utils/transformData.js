@@ -1,20 +1,43 @@
-export function groupByOrigin(characters) {
-    
-    const counts = {};
+function groupBy(characters, keyFn, limit = Infinity) {
+  const counts = {};
+  characters.forEach(c => {
+    const key = keyFn(c) || "Unknown";
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
 
-    characters.forEach(c => {
-        const origin = c.origin?.name || "Unknown";
+export function groupByOrigin(characters, limit = 12) {
+  return groupBy(characters, c => c.origin?.name, limit);
+}
 
-        if (!counts[origin]) {
-        counts[origin] = 0;
-        }
+export function groupByLocation(characters, limit = 12) {
+  return groupBy(characters, c => c.location?.name, limit);
+}
 
-        counts[origin]++;
+export function groupBySpecies(characters) {
+  return groupBy(characters, c => c.species);
+}
 
-    });
+export function groupByStatus(characters) {
+  return groupBy(characters, c => c.status);
+}
 
-    return Object.entries(counts).map(([origin, count]) => ({
-        origin,
-        count
-    }));
+export function groupByGender(characters) {
+  return groupBy(characters, c => c.gender);
+}
+
+export function getSummaryStats(characters) {
+  const total = characters.length;
+  const alive = characters.filter(c => c.status === "Alive").length;
+  return {
+    total,
+    alive,
+    alivePercent: total ? Math.round((alive / total) * 100) : 0,
+    uniqueOrigins: new Set(characters.map(c => c.origin?.name)).size,
+    uniqueSpecies: new Set(characters.map(c => c.species)).size,
+  };
 }
