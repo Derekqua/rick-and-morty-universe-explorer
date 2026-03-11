@@ -98,6 +98,7 @@ npm run preview
 | Page resets to 1 only when search term changes | Prevents requesting page 3 of a search that only has 1 page |
 | Search state lives in `page.jsx` not `SearchBar` | Debounce in `page.jsx` prevents an API call firing on every single keystroke — waits 250ms of no typing before calling the API |
 | `useMemo` for species dropdown | Prevents recomputing the species list on every keystroke — only recalculates when the characters array actually changes |
+| Characters with `unknown` origin or location excluded from displacement | Cannot determine displacement without both values — including them would skew the chart |
 ---
 
 ## Testing
