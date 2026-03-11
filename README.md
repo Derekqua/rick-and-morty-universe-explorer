@@ -9,7 +9,7 @@ An interactive data dashboard built with Next.js that lets you explore character
 - **Global search** — searches all 826 characters via the API, not just loaded ones
 - **Filters** — filter by species, status, and gender
 - **Load more** — paginated character loading without losing scroll position
-- **Analytics dashboard** — visualises the full character dataset with 6 charts
+- **Analytics dashboard** — visualises the full character dataset with 5 charts
 - **Debounced search** — smooth search experience with no unnecessary API calls
 
 ---
@@ -72,7 +72,7 @@ src/
 
 ```bash
 # Clone the repo
-git clone <your-repo-url>
+git clone https://github.com/Derekqua/rick-and-morty-universe-explorer.git
 cd rick-and-morty-universe-explorer
 
 # Install dependencies
@@ -99,15 +99,16 @@ npm run preview
 |----------|--------|
 | Global search via `?name=` API param | More efficient than loading all characters and filtering locally |
 | `useAllCharacters` only runs on `/dashboard` | Avoids 42 parallel requests on the main explorer page |
-| Page resets to 1 only when search term changes | Prevents load more from jumping back to the top |
-| Early return removed from `page.jsx` | Keeps the search input mounted so typing focus is never lost |
+| Page resets to 1 only when search term changes | Prevents requesting page 3 of a search that only has 1 page |
+| Search state lives in `page.jsx` not `SearchBar` | Debounce in `page.jsx` prevents an API call firing on every single keystroke — waits 250ms of no typing before calling the API |
 | Charts always use full dataset | Ensures analytics are accurate regardless of current search |
-
+| `useMemo` for species dropdown | Prevents recomputing the species list on every keystroke — only recalculates when the characters array actually changes |
 ---
 
 ## Testing
 - Search "rick" → should show results from all dimensions, not just page 1
 - Apply a species filter → should narrow results correctly
-- Load more → should append results without resetting scroll
-- Visit `/dashboard` → charts should load the full dataset independently
 - Clear search → should return to unfiltered paginated results
+- Load more → should append results without resetting scroll
+- Visit dashboard from the navbar → charts should load the full dataset independently
+
