@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import useCharacters from "@/hooks/useCharacters";
+import Chart from "@/components/Chart";
 import CharacterList from "@/components/CharacterList";
 import SearchBar from "@/components/SearchBar";
 import Filters from "@/components/Filters";
@@ -53,6 +54,14 @@ export default function Home() {
         status={status}   setStatus={setStatus}
         gender={gender}   setGender={setGender}
       />
+
+      {/* Charts — based on currently loaded characters only */}
+      {filtered.length > 0 && (
+        <section className="mt-16">
+          <p className="text-sm text-gray-400 mb-6">Based on {filtered.length} loaded characters — load more to update charts</p>
+          <Chart characters={filtered} />
+        </section>
+      )}
 
       <CharacterList characters={filtered} />
 

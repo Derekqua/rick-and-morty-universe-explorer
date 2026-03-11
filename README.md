@@ -9,7 +9,7 @@ An interactive data dashboard built with Next.js that lets you explore character
 - **Global search** — searches all 826 characters via the API, not just loaded ones
 - **Filters** — filter by species, status, and gender
 - **Load more** — paginated character loading without losing scroll position
-- **Analytics dashboard** — visualises the full character dataset with 5 charts
+- **Inline analytics** — charts update live based on currently loaded & filtered characters
 - **Debounced search** — smooth search experience with no unnecessary API calls
 
 ---
@@ -19,7 +19,6 @@ An interactive data dashboard built with Next.js that lets you explore character
 | Route | Description |
 |-------|-------------|
 | `/` | Character explorer with search, filters, and paginated grid |
-| `/dashboard` | Analytics dashboard with charts and summary stats |
 
 ---
 
@@ -39,19 +38,16 @@ src/
 ├── app/
 │   ├── layout.jsx          # Root layout with shared navbar
 │   ├── page.jsx            # Character explorer page
-│   └── dashboard/
-│       └── page.jsx        # Analytics dashboard page
 │
 ├── components/
 │   ├── CharacterCard.jsx   # Single character card
 │   ├── CharacterList.jsx   # Grid of character cards
 │   ├── Filters.jsx         # Species / status / gender dropdowns
-│   ├── Chart.jsx     # All charts for the dashboard
+│   ├── Chart.jsx           # Analytics charts (updates with filters)
 │   └── SearchBar.jsx       # Debounced global search input
 │
 ├── hooks/
 │   ├── useCharacters.js    # Fetches paginated characters with search
-│   └── useAllCharacters.js # Fetches full dataset for analytics
 │
 ├── lib/
 │   └── api.js              # API fetch functions
@@ -98,10 +94,9 @@ npm run preview
 | Decision | Reason |
 |----------|--------|
 | Global search via `?name=` API param | More efficient than loading all characters and filtering locally |
-| `useAllCharacters` only runs on `/dashboard` | Avoids 42 parallel requests on the main explorer page |
+| Charts use loaded characters only, not full dataset | charts grow naturally as the user loads more pages |
 | Page resets to 1 only when search term changes | Prevents requesting page 3 of a search that only has 1 page |
 | Search state lives in `page.jsx` not `SearchBar` | Debounce in `page.jsx` prevents an API call firing on every single keystroke — waits 250ms of no typing before calling the API |
-| Charts always use full dataset | Ensures analytics are accurate regardless of current search |
 | `useMemo` for species dropdown | Prevents recomputing the species list on every keystroke — only recalculates when the characters array actually changes |
 ---
 
@@ -109,6 +104,6 @@ npm run preview
 - Search "rick" → should show results from all dimensions, not just page 1
 - Apply a species filter → should narrow results correctly
 - Clear search → should return to unfiltered paginated results
+- Clear all filters → should reset all three dropdowns at once
 - Load more → should append results without resetting scroll
-- Visit dashboard from the navbar → charts should load the full dataset independently
 

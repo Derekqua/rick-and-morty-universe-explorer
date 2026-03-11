@@ -22,23 +22,3 @@ export async function fetchCharacters(page = 1, search = "") {
     return { data: null, error: "Failed to fetch characters" };
   }
 }
-
-export async function fetchAllCharacters() {
-  try {
-    const first = await fetch(`${BASE_URL}/character`).then(r => r.json());
-    const totalPages = first.info?.pages ?? 1;
-    const results = [...(first.results ?? [])];
-
-    const requests = [];
-    for (let p = 2; p <= totalPages; p++) {
-      requests.push(fetch(`${BASE_URL}/character?page=${p}`).then(r => r.json()));
-    }
-
-    const pages = await Promise.all(requests);
-    pages.forEach(page => results.push(...(page.results ?? [])));
-
-    return { data: results, error: null };
-  } catch (err) {
-    return { data: [], error: "Failed to load full dataset." };
-  }
-}
