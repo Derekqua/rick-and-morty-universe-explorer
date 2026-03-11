@@ -73,7 +73,7 @@ src/
 ```bash
 # Clone the repo
 git clone <your-repo-url>
-cd rick-morty-explorer
+cd rick-and-morty-universe-explorer
 
 # Install dependencies
 npm install
