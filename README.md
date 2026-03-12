@@ -99,6 +99,8 @@ npm run preview
 | Search state lives in `page.jsx` not `SearchBar` | Debounce in `page.jsx` prevents an API call firing on every single keystroke — waits 250ms of no typing before calling the API |
 | `useMemo` for species dropdown | Prevents recomputing the species list on every keystroke — only recalculates when the characters array actually changes |
 | Characters with `unknown` origin or location excluded from displacement | Cannot determine displacement without both values — including them would skew the chart |
+| Paginated API calls on demand ("Load More") | Characters are fetched one page at a time only when the user requests it, rather than preloading all pages — keeps initial load fast and avoids unnecessary API calls |
+
 ---
 
 ## Testing
